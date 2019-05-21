@@ -41,4 +41,31 @@ class BookedWorkshop extends Model
     {
         return $this->belongsTo(Workshop::class, 'workshop_id', 'id');
     }
+
+    /**
+     * @param int $workshopId
+     * @param int $leaderId
+     * @return BookedWorkshop
+     */
+    public function store(int $workshopId, int $leaderId)
+    {
+        $bookedWorkshop = new self;
+        $bookedWorkshop->workshop_id = $workshopId;
+        $bookedWorkshop->leader_id = $leaderId;
+        $bookedWorkshop->save();
+
+        return $bookedWorkshop;
+    }
+
+    public function getFreePlaces(int $maxGuests)
+    {
+        $allPlaces = $maxGuests;
+        $engagedPlaces = self::with('leader')->get();
+        $places = 0;
+        foreach ($engagedPlaces as $engagedPlace) {
+            $places += $engagedPlace->leader->guests()->count() + 1;
+        }
+
+        return $allPlaces - $places;
+    }
 }

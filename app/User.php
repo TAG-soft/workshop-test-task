@@ -81,4 +81,13 @@ class User extends Authenticatable
     {
         return $this->hasOne(BookedWorkshop::class, 'leader_id', 'id');
     }
+
+    /**
+     * @param array $userData
+     * @return User|\Illuminate\Database\Eloquent\Model
+     */
+    public function store(array $userData)
+    {
+        return self::create($userData);
+    }
 }

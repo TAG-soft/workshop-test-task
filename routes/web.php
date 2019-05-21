@@ -11,10 +11,6 @@
 |
 */
 
-//Route::get('/', function () {
-//    return view('welcome');
-//});
-
-Route::get('/', 'HomeController@index');
+Route::get('/', 'HomeController@index')->name('index');
 
 Route::post('/submit', 'HomeController@submit');

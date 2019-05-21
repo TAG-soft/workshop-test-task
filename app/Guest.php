@@ -34,4 +34,12 @@ class Guest extends Model
     {
         return $this->belongsTo(User::class, 'id', 'leader_id');
     }
+
+    /**
+     * @param array $guests
+     */
+    public function store(array $guests)
+    {
+        self::insert($guests);
+    }
 }
