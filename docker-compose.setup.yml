@@ -1,0 +1,27 @@
+version: '3'
+
+services:    
+  nginx:
+    entrypoint: "true"
+
+  php_fpm:
+    entrypoint: "sh -c 'cd /var/www/workshop &&
+                  composer config -g github-oauth.github.com 181b6fbddc3ea5941713fceab2f313f596ef64bb && 
+                  composer install && 
+                  php artisan key:generate &&
+                  chmod -R 777 /var/www/workshop/storage &&
+                  chmod -R 777 /var/www/workshop/bootstrap'
+                  true"
+
+  mysql:
+    entrypoint: "/tmp/init_base.sh"
+
+  npm:
+    entrypoint: "sh -c 'cd /var/www/workshop && npm install && npm run watch'"
+
+networks:
+  workshop:
+
+#127.0.0.1 backend.workshop.local
+#127.0.0.1 frontend.workshop.local
+#127.0.0.1 workshop.local

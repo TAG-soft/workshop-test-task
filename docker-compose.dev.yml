@@ -1,0 +1,63 @@
+version: '3'
+
+services:    
+
+  nginx:
+    container_name: workshop_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/sites-dev:/etc/nginx/sites-available/
+      - ./docker/nginx/sites-dev:/etc/nginx/sites-enabled/
+      - ./docker/nginx/config.conf:/etc/nginx/conf.d/config.conf
+      - ./:/var/www/workshop
+      - ./.htpasswd:/etc/nginx/.htpasswd
+    depends_on:
+      - php_fpm
+    networks:
+      - workshop
+
+  php_fpm:
+    container_name: workshop_php_fpm
+    volumes:
+      - ./:/var/www/workshop
+      - ./docker/php-fpm/www.conf:/etc/php/7.2/fpm/pool.d/www.conf
+      - ./docker/php-fpm/php.ini:/etc/php/7.2/fpm/conf.d/php.ini
+    env_file:
+      - ./docker/php-fpm/php-fpm.env
+    depends_on:
+        - mysql
+    networks:
+      - workshop
+    entrypoint: "sh -c 'cd /var/www/workshop &&
+                  composer install && 
+                  php artisan migrate --force && 
+                  service cron start && service php7.2-fpm start && tail -f /var/log/php7.2-fpm.log'"
+
+  mysql:
+    container_name: workshop_mysql
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./docker/mysql/data:/var/lib/mysql
+      - ./docker/mysql/mysqld.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf
+    env_file:
+      - docker/mysql/mysql.env
+    networks:
+      - workshop
+
+  npm:
+    container_name: workshop_npm
+    image: node
+    volumes:
+      - ./:/var/www/workshop
+    networks:
+      - workshop
+    entrypoint: "sh -c 'cd /var/www/workshop && npm install && npm run watch'"
+
+networks:
+  workshop:
+
+#127.0.0.1 backend.workshop.local
+#127.0.0.1 frontend.workshop.local
+#127.0.0.1 workshop.local
