@@ -15,6 +15,9 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
             integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
             crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
             integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
             crossorigin="anonymous"></script>
@@ -60,7 +63,7 @@
         {!! Form::open(['action' => 'HomeController@submit']) !!}
         <div class="form-group">
             {!! Form::label('name', 'Customer Name') !!}
-            {!! Form::text('name', null, ['class' => 'form-control']) !!}
+            {!! Form::text('name', null, ['class' => 'form-control name_auto']) !!}
             @if ($errors->has('name'))
                 <div class="alert alert-danger" role="alert">{{ $errors->first('name') }}</div>
             @endif
@@ -81,17 +84,18 @@
         </div>
         <hr class="my-4">
         <div class="guest">
+            <h5>1</h5>
             <div class="form-group">
                 {!! Form::label('guest_name[1]', 'Guest Name') !!}
-                {!! Form::text('guest_name[1]', null, ['class' => 'form-control', 'name' => 'guest_name[1]']) !!}
-                @if ($errors->has('guest_name.1'))
+                {!! Form::text('guest_name[1]', null, ['class' => 'form-control name_auto', 'name' => 'guest_name[1]']) !!}
+                @if ($errors->has('guest_name.*'))
                     <div class="alert alert-danger" role="alert">{{ $errors->first('guest_name.*') }}</div>
                 @endif
             </div>
             <div class="form-group">
                 {!! Form::label('guest_email[1]', 'Email') !!}
-                {!! Form::text('guest_email[1]', null, ['class' => 'form-control', 'name' => 'guest_email[1]']) !!}
-                @if ($errors->has('guest_email.1'))
+                {!! Form::text('guest_email[1]', null, ['class' => 'form-control mail_auto', 'name' => 'guest_email[1]']) !!}
+                @if ($errors->has('guest_email.*'))
                     <div class="alert alert-danger" role="alert">{{ $errors->first('guest_email.*') }}</div>
                 @endif
             </div>
@@ -100,7 +104,6 @@
         <hr class="my-4">
         <button type="submit" class="btn btn-outline-success">Book Workshop</button>
         {!! Form::close() !!}
-
     </div>
 </div>
 </body>
@@ -109,14 +112,48 @@
 
     $("#add-guest-fields").click(function () {
         counter++;
-        $(".guest").append('<div class="form-group">\n' +
+        $(".guest").append('<hr class="my-4"><h5>' + counter + '</h5><div class="form-group">\n' +
             '                <label for="guest_name[' + counter + ']">Guest Name</label>\n' +
-            '                <input class="form-control" name="guest_name[' + counter + ']" type="text" id="guest_name[' + counter + ']">\n' +
+            '                <input class="form-control name_auto" name="guest_name[' + counter + ']" type="text" id="autocomplete">\n' +
             '            </div>\n' +
             '            <div class="form-group">\n' +
             '                <label for="guest_email[' + counter + ']">Email</label>\n' +
-            '                <input class="form-control" name="guest_email[' + counter + ']" type="text" id="guest_email[' + counter + ']">\n' +
+            '                <input class="form-control mail_auto" name="guest_email[' + counter + ']" type="text" id="guest_email[' + counter + ']">\n' +
             '            </div>');
+
+        getCustomersFromShopify();
     });
+
+    function getCustomersFromShopify() {
+        let customersData = {};
+
+        let url = window.location.origin + '/getCustomers';
+        $.ajax({
+            url: url,
+            type: 'GET',
+            crossDomain: false,
+            async: false,
+            success: function (data) {
+                console.log('RUNN!!!');
+                customersData = data;
+            },
+            error: function (e) {
+                console.log(e.message);
+            }
+        });
+
+        $(".name_auto").on('focus', function () {
+            $(this).autocomplete({
+                source: customersData.customers.map(function (val, key) {
+                    return {
+                        label: [val.first_name, val.last_name],
+                        value: val.first_name + ' ' + val.last_name
+                    };
+                })
+            });
+        });
+    }
+
+    window.onload = getCustomersFromShopify;
 </script>
 </html>

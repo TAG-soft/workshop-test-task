@@ -30,6 +30,15 @@ use Illuminate\Database\Eloquent\Model;
 class Guest extends Model
 {
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'name', 'email', 'leader_id',
+    ];
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function leader()
@@ -43,60 +52,5 @@ class Guest extends Model
     public function store(array $guests)
     {
         self::insert($guests);
-    }
-
-    /**
-     * @param array $guestNames
-     * @param array $guestEmails
-     * @return GuestDataDto
-     */
-    public function getGuestsFromRequest(array $guestNames, array $guestEmails)
-    {
-        $guests = [];
-        $isValid = false;
-        $guestsDataDto = new GuestDataDto();
-
-        foreach ($guestNames as $keyName => $guestName) {
-            foreach ($guestEmails as $keyEmail => $guestEmail) {
-                if ($keyName === $keyEmail) {
-                    if (null === $guestName && null === $guestEmail) {
-
-                        $guestsDataDto->setGuests($guests);
-                        break;
-                    } elseif (null === $guestName || null === $guestEmail) {
-
-                        $guestsDataDto->setStatus(GuestDataEnum::WRONG_DATA);
-                    }
-                    $guests[] = [
-                        'name' => $guestName,
-                        'email' => $guestEmail,
-                    ];
-                    $isValid = true;
-                }
-            }
-        }
-
-        $guestsDataDto
-            ->setIsValid($isValid)
-            ->setGuests($guests)
-            ->setGuestsCount($guests);
-
-        return $guestsDataDto;
-    }
-
-    /**
-     * @param array $guests
-     * @param int $leaderId
-     * @return array
-     */
-    public function addLeaderRelations(array $guests, int $leaderId)
-    {
-        $relatedGuests = [];
-        foreach ($guests as $guest) {
-            $guest['leader_id'] = $leaderId;
-            $relatedGuests[] = $guest;
-        }
-
-        return $relatedGuests;
     }
 }

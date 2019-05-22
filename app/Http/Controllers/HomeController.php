@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\BookedWorkshop;
-use App\Enums\GuestDataEnum;
 use App\Guest;
 use App\Http\Requests\BookWorkshopRequest;
+use App\Services\GuestService;
 use App\User;
 use App\Workshop;
 
@@ -48,22 +48,16 @@ class HomeController extends Controller
     }
 
     /**
+     * @param GuestService $guestService
      * @param BookWorkshopRequest $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function submit(BookWorkshopRequest $request)
+    public function submit(GuestService $guestService, BookWorkshopRequest $request)
     {
         $workshop = $this->workshopModel->getWorkshop($request->workshop);
         $freePlaces = $this->bookedWorkshopModel->getFreePlaces($workshop->id, $workshop->max_guests);
 
-        $guestsDataDto = $this->guestModel->getGuestsFromRequest($request->guest_name, $request->guest_email);
-
-        if (GuestDataEnum::WRONG_DATA === $guestsDataDto->getStatus()) {
-            \Session::flash('flash_message', 'Please fill correct data for guests');
-            \Session::flash('alert-class', 'alert-danger');
-
-            return redirect()->back();
-        }
+        $guestsDataDto = $guestService->getGuestsFromRequest($request->guest_name, $request->guest_email);
 
         if ($freePlaces < $guestsDataDto->getGuestsCount()) {
             if (0 < $freePlaces) {
@@ -80,7 +74,7 @@ class HomeController extends Controller
         $leader = $this->userModel->store($request->all());
 
         if ($guestsDataDto->getIsValid()) {
-            $guests = $this->guestModel->addLeaderRelations($guestsDataDto->getGuests(), $leader->id);
+            $guests = $guestService->addLeaderRelations($guestsDataDto->getGuests(), $leader->id);
             $this->guestModel->store($guests);
         }
 

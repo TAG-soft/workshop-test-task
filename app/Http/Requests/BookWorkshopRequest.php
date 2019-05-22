@@ -28,9 +28,9 @@ class BookWorkshopRequest extends FormRequest
             'phone' => 'required|integer',
             'workshop' => 'required|integer',
             'guest_name' => 'array',
-            'guest_name.*' => 'string|nullable',
+            'guest_name.*' => 'string|nullable|required_with:guest_email.*',
             'guest_email' => 'array',
-            'guest_email.*' => 'email|nullable',
+            'guest_email.*' => 'email|nullable|required_with:guest_name.*',
         ];
     }
 }
