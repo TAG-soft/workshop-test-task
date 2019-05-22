@@ -44,7 +44,7 @@
         }
 
         .container {
-            margin-top: 100px;
+            padding-top: 75px;
         }
     </style>
 </head>

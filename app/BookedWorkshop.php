@@ -57,15 +57,29 @@ class BookedWorkshop extends Model
         return $bookedWorkshop;
     }
 
-    public function getFreePlaces(int $maxGuests)
+    /**
+     * @param int $id
+     * @param int $maxPlaces
+     * @return int
+     */
+    public function getFreePlaces(int $id, int $maxPlaces)
     {
-        $allPlaces = $maxGuests;
-        $engagedPlaces = self::with('leader')->get();
-        $places = 0;
-        foreach ($engagedPlaces as $engagedPlace) {
-            $places += $engagedPlace->leader->guests()->count() + 1;
+        $existedWorkshops = $this->getAllWorkshopsWithLeader($id);
+
+        $engagedPlaces = 0;
+        foreach ($existedWorkshops as $workshop) {
+            $engagedPlaces += $workshop->leader->guests()->count() + 1;
         }
 
-        return $allPlaces - $places;
+        return $maxPlaces - $engagedPlaces;
+    }
+
+    /**
+     * @param int $id
+     * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
+     */
+    private function getAllWorkshopsWithLeader(int $id)
+    {
+        return self::where('workshop_id', $id)->with('leader')->get();
     }
 }

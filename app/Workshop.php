@@ -34,4 +34,9 @@ class Workshop extends Model
     {
         return $this->hasMany(BookedWorkshop::class, 'workshop_id', 'id');
     }
+
+    public function getWorkshop(int $id)
+    {
+        return $this->find($id);
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\BookedWorkshop;
+use App\Enums\GuestDataEnum;
 use App\Guest;
 use App\Http\Requests\BookWorkshopRequest;
 use App\User;
@@ -52,54 +53,35 @@ class HomeController extends Controller
      */
     public function submit(BookWorkshopRequest $request)
     {
-        $workshop = $this->workshopModel->find($request->workshop)->first();
-        $freePlaces = $this->bookedWorkshopModel->getFreePlaces($workshop->max_guests);
+        $workshop = $this->workshopModel->getWorkshop($request->workshop);
+        $freePlaces = $this->bookedWorkshopModel->getFreePlaces($workshop->id, $workshop->max_guests);
 
-        $guests = [];
-        $isValid = false;
-        foreach ($request->guest_name as $keyName => $guestName) {
-            foreach ($request->guest_email as $keyEmail => $guestEmail) {
-                if ($keyName === $keyEmail) {
-                    if (null === $guestName && null === $guestEmail) {
+        $guestsDataDto = $this->guestModel->getGuestsFromRequest($request->guest_name, $request->guest_email);
 
-                        break;
-                    } elseif (null === $guestName || null === $guestEmail) {
+        if (GuestDataEnum::WRONG_DATA === $guestsDataDto->getStatus()) {
+            \Session::flash('flash_message', 'Please fill correct data for guests');
+            \Session::flash('alert-class', 'alert-danger');
 
-                        \Session::flash('flash_message', 'Please fill correct data for guests');
-                        \Session::flash('alert-class', 'alert-danger');
-
-                        return redirect()->route('index');
-                    }
-                    $guests[] = [
-                        'name' => $guestName,
-                        'email' => $guestEmail,
-                    ];
-                    $isValid = true;
-                }
-            }
+            return redirect()->back();
         }
 
-        $guestsNum = count($guests) + 1;
-        if ($freePlaces < $guestsNum) {
+        if ($freePlaces < $guestsDataDto->getGuestsCount()) {
             if (0 < $freePlaces) {
-                \Session::flash('flash_message', 'It\'s only '. $freePlaces .' free places in this workshop');
+                \Session::flash('flash_message', 'It\'s only ' . $freePlaces . ' free places in this workshop');
                 \Session::flash('alert-class', 'alert-danger');
             } else {
                 \Session::flash('flash_message', 'No free places in this workshop');
                 \Session::flash('alert-class', 'alert-danger');
             }
 
-            return redirect()->route('index');
+            return redirect()->back();
         }
 
         $leader = $this->userModel->store($request->all());
-        $leaderGuests = [];
-        if ($isValid) {
-            foreach ($guests as $guest) {
-                $guest['leader_id'] = $leader->id;
-                $leaderGuests[] = $guest;
-            }
-            $this->guestModel->store($leaderGuests);
+
+        if ($guestsDataDto->getIsValid()) {
+            $guests = $this->guestModel->addLeaderRelations($guestsDataDto->getGuests(), $leader->id);
+            $this->guestModel->store($guests);
         }
 
         $this->bookedWorkshopModel->store($workshop->id, $leader->id);
