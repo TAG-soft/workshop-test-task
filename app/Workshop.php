@@ -35,6 +35,10 @@ class Workshop extends Model
         return $this->hasMany(BookedWorkshop::class, 'workshop_id', 'id');
     }
 
+    /**
+     * @param int $id
+     * @return Workshop|Workshop[]|\Illuminate\Database\Eloquent\Collection|Model|null
+     */
     public function getWorkshop(int $id)
     {
         return $this->find($id);

@@ -27,6 +27,15 @@ use Illuminate\Database\Eloquent\Model;
 class BookedWorkshop extends Model
 {
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'workshop_id', 'leader_id',
+    ];
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function leader()
