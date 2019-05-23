@@ -15,4 +15,6 @@ Route::get('/', 'HomeController@index')->name('index');
 
 Route::post('/submit', 'HomeController@submit');
 
-Route::get('/getCustomers', 'ShopifyController@getCustomers');
+Route::get('/get-customers', 'ShopifyController@getCustomers');
+
+Route::get('/free-places/{id}', 'HomeController@getFreePlaces');

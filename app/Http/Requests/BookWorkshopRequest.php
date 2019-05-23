@@ -25,7 +25,7 @@ class BookWorkshopRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'phone' => 'required|integer',
+            'phone' => 'required|string',
             'workshop' => 'required|integer',
             'guest_name' => 'array',
             'guest_name.*' => 'string|nullable|required_with:guest_email.*',

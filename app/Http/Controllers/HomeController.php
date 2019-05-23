@@ -85,4 +85,16 @@ class HomeController extends Controller
 
         return redirect()->route('index');
     }
+
+    /**
+     * @param int $id
+     * @return int
+     */
+    public function getFreePlaces(int $id)
+    {
+        $workshop = $this->workshopModel->getWorkshop($id);
+        $freePlaces = $this->bookedWorkshopModel->getFreePlaces($workshop->id, $workshop->max_guests);
+
+        return $freePlaces;
+    }
 }
