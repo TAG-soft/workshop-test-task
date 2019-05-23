@@ -42,7 +42,7 @@ class HomeController extends Controller
     public function index()
     {
         $workshops = $this->workshopModel->all();
-        $workshops = $workshops->pluck('time', 'id');
+        $workshops = $workshops->pluck('datetime', 'id');
 
         return view('welcome', compact('workshops'));
     }

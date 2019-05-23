@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -42,5 +43,16 @@ class Workshop extends Model
     public function getWorkshop(int $id)
     {
         return $this->find($id);
+    }
+
+    /**
+     * @return string
+     * @throws \Exception
+     */
+    public function getDatetimeAttribute()
+    {
+        $carbon = new Carbon($this->day);
+
+        return $carbon->format('F jS') . ', ' . $this->time;
     }
 }
