@@ -24,6 +24,7 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
             integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
             crossorigin="anonymous"></script>
+    <script src="/js/workshop.js"></script>
 
     <!-- Styles -->
     <style>
@@ -67,15 +68,11 @@
             @if ($errors->has('name'))
                 <div class="alert alert-danger" role="alert">{{ $errors->first('name') }}</div>
             @endif
-            {{--        </div>--}}
-            {{--        <div class="form-group">--}}
             {!! Form::label('phone', 'Phone') !!}
             {!! Form::text('phone', null, ['class' => 'form-control']) !!}
             @if ($errors->has('phone'))
                 <div class="alert alert-danger" role="alert">{{ $errors->first('phone') }}</div>
             @endif
-            {{--        </div>--}}
-            {{--        <div class="form-group">--}}
             {!! Form::label('workshop', 'Workshop Time') !!}
             {!! Form::select('workshop', $workshops, null, ['class' => 'form-control']) !!}
             <br>
@@ -93,8 +90,6 @@
                 @if ($errors->has('guest_name.*'))
                     <div class="alert alert-danger" role="alert">{{ $errors->first('guest_name.*') }}</div>
                 @endif
-                {{--            </div>--}}
-                {{--            <div class="form-group">--}}
                 {!! Form::label('guest_email[1]', 'Email') !!}
                 {!! Form::text('guest_email[1]', null, ['class' => 'form-control mail_auto', 'name' => 'guest_email[1]']) !!}
                 @if ($errors->has('guest_email.*'))
@@ -110,8 +105,6 @@
 </div>
 </body>
 <script>
-    let counter = 1;
-
     $('#workshop').on('change', function () {
         let url = window.location.origin + '/free-places/' + this.value;
         $.ajax({
@@ -128,101 +121,18 @@
         });
     });
 
+    let counter = 1;
+
     $("#add-guest-fields").click(function () {
         counter++;
         $(".guest").append('<hr class="my-4"><h5>' + counter + '</h5><div class="form-group">\n' +
             '                <label for="guest_name[' + counter + ']">Guest Name</label>\n' +
             '                <input class="form-control name_auto guest" name="guest_name[' + counter + ']" type="text" id="autocomplete">\n' +
-            // '            </div>\n' +
-            // '            <div class="form-group">\n' +
             '                <label for="guest_email[' + counter + ']">Email</label>\n' +
             '                <input class="form-control mail_auto" name="guest_email[' + counter + ']" type="text" id="guest_email[' + counter + ']">\n' +
             '            </div>');
 
         initData();
     });
-
-    function initData() {
-        let customersData = {};
-
-        let workshopId = ($('#workshop').val());
-        let fpurl = window.location.origin + '/free-places/' + workshopId;
-        $.ajax({
-            url: fpurl,
-            type: 'GET',
-            crossDomain: false,
-            async: false,
-            success: function (data) {
-                $('.free-places').html(data);
-            },
-            error: function (e) {
-                console.log(e.message);
-            }
-        });
-
-        let gcurl = window.location.origin + '/get-customers';
-        $.ajax({
-            url: gcurl,
-            type: 'GET',
-            crossDomain: false,
-            async: false,
-            success: function (data) {
-                customersData = data;
-            },
-            error: function (e) {
-                console.log(e.message);
-            }
-        });
-
-        $(".leader").on('focus', function () {
-            $(this).autocomplete({
-                source: customersData.customers.map(function (val, key) {
-                    return {
-                        label: [val.first_name, val.last_name],
-                        value: val.first_name + ' ' + val.last_name
-                    };
-                })
-            });
-        }).change(function () {
-            let nameArray = this.value.split(' ');
-            let firstName = nameArray[0];
-            let lastName = nameArray[1];
-            let customer = {};
-
-            for (var i = 0; i < customersData.customers.length; i++) {
-                if (customersData.customers[i].first_name === firstName && customersData.customers[i].last_name === lastName) {
-                    customer = customersData.customers[i];
-                }
-            }
-            if (null !== customer.default_address.phone) {
-                $(this).next().next('input').val(customer.default_address.phone);
-            }
-        });
-
-        $(".guest").on('focus', function () {
-            $(this).autocomplete({
-                source: customersData.customers.map(function (val, key) {
-                    return {
-                        label: [val.first_name, val.last_name],
-                        value: val.first_name + ' ' + val.last_name
-                    };
-                })
-            });
-        }).change(function () {
-            let nameArray = this.value.split(' ');
-            let firstName = nameArray[0];
-            let lastName = nameArray[1];
-            let customer = {};
-
-            for (var i = 0; i < customersData.customers.length; i++) {
-                if (customersData.customers[i].first_name === firstName && customersData.customers[i].last_name === lastName) {
-                    customer = customersData.customers[i];
-                }
-            }
-            $(this).next().next('input').val(customer.email);
-        });
-    }
-
-    window.onload = initData;
 </script>
 </html>
